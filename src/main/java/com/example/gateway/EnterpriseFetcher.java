@@ -23,9 +23,9 @@ public class EnterpriseFetcher {
     }
 
     private List<Enterprise> readHDAX() {
-        InputStream inputStream = EnterpriseFetcher.class.getResourceAsStream("HDAX_ICR.20211105.xls");
+        InputStream inputStream = EnterpriseFetcher.class.getResourceAsStream("hdax_symbols.csv");
         if (inputStream == null) {
-            return Collections.singletonList(new Enterprise("IBM", "IBM"));
+            throw new IllegalArgumentException("File not found");
         }
 
         List<Enterprise> enterprises = new ArrayList<>();

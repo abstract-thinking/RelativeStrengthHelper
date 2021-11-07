@@ -3,11 +3,11 @@ package com.example.model;
 public class Enterprise {
 
     private final String name;
-    private final String isin;
+    private final String symbol;
 
-    public Enterprise(String name, String isin) {
+    public Enterprise(String name, String symbol) {
         this.name = name;
-        this.isin = isin;
+        this.symbol = symbol;
     }
 
     public String getName() {
@@ -15,6 +15,6 @@ public class Enterprise {
     }
 
     public String getSymbol() {
-        return isin;
+        return symbol;
     }
 }
