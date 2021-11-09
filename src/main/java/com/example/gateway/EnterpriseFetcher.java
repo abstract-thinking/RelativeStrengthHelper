@@ -1,10 +1,6 @@
 package com.example.gateway;
 
-import com.example.model.Enterprise;
-import com.example.model.Exchange;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Row;
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,13 +8,53 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.example.model.Enterprise;
+import com.example.boundary.api.Exchange;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@Service
 public class EnterpriseFetcher {
+
+    @Value("${access.key}")
+    private String accessKey;
+
+    public Enterprise lookUp(String symbol) {
+        final HttpUriRequest request = RequestBuilder
+                .get("http://api.marketstack.com/v1/tickers/" + symbol + "?access_key=" + accessKey)
+                .build();
+
+        try {
+            final HttpResponse response = HttpClientBuilder.create().build().execute(request);
+            final String jsonString = EntityUtils.toString(response.getEntity());
+
+            record Description(String symbol, String name) {}
+            Description description = new ObjectMapper()
+                    .configure(FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    .readValue(jsonString, Description.class);
+
+            return new Enterprise(description.name(), description.symbol());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return new Enterprise("", symbol);
+    }
 
     public List<Enterprise> fetch(Exchange exchange) {
         return switch (exchange) {
             case HDAX -> readHDAX();
-            case NASDAQ -> Collections.emptyList();
-            case SP500 -> Collections.emptyList();
+            case NASDAQ, SP500 -> Collections.emptyList();
         };
     }
 
