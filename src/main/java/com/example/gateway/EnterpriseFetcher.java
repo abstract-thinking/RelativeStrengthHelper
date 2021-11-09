@@ -27,10 +27,9 @@ public class EnterpriseFetcher {
     private String accessKey;
 
     public Enterprise lookUp(String symbol) {
-        record Description(String symbol, String name) {
-        }
+        record Description(String symbol, String name) {}
 
-        Description description = new RestTemplate().getForEntity(URL, Description.class, symbol, accessKey).getBody();
+        var description = new RestTemplate().getForEntity(URL, Description.class, symbol, accessKey).getBody();
         if (description == null) {
             return new Enterprise("", symbol);
         }
@@ -47,13 +46,13 @@ public class EnterpriseFetcher {
 
     @SneakyThrows
     private List<Enterprise> readHDAX() {
-        InputStream inputStream = EnterpriseFetcher.class.getClassLoader().getResourceAsStream("hdax_symbols.csv");
+        var inputStream = EnterpriseFetcher.class.getClassLoader().getResourceAsStream("hdax_symbols.csv");
         if (inputStream == null) {
             throw new IllegalArgumentException("File not found");
         }
 
-        List<Enterprise> enterprises = new ArrayList<>();
-        CSVReader reader = new CSVReader(new InputStreamReader(inputStream));
+        var enterprises = new ArrayList<Enterprise>();
+        var reader = new CSVReader(new InputStreamReader(inputStream));
         String[] nextLine;
         while ((nextLine = reader.readNext()) != null) {
             enterprises.add(new Enterprise(nextLine[1], nextLine[0]));

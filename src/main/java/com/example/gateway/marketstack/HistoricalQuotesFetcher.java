@@ -1,6 +1,10 @@
 package com.example.gateway.marketstack;
 
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -9,8 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.example.gateway.marketstack.dto.HistoricalResult;
-import com.example.gateway.marketstack.dto.Quotes;
 import com.example.model.Enterprise;
 import com.example.model.HistoricalQuote;
 
@@ -24,17 +26,32 @@ public class HistoricalQuotesFetcher {
     private String accessKey;
 
     public List<HistoricalQuote> fetch(Enterprise enterprise, int period) {
-        LocalDate stopDate = LocalDate.now();
-        LocalDate startDate = stopDate.minusYears(1);
+        record Quotes(String date, double open, double high, double low, double close, double volume) {
+            public LocalDate localDate() {
+                return LocalDate.parse(date, createDateTimeFormatter());
+            }
 
-        HistoricalResult historicalResult = new RestTemplate().getForEntity(URL, HistoricalResult.class, accessKey,
-                enterprise.getSymbol(), period, startDate, stopDate).getBody();
+            private DateTimeFormatter createDateTimeFormatter() {
+                return new DateTimeFormatterBuilder()
+                        .append(ISO_LOCAL_DATE_TIME)
+                        .appendOffset("+HHMM", "+0000")
+                        .toFormatter();
+            }
+        }
+
+        record Pagination( int limit, int offset, int count, int total) { }
+        record HistoricalResult(Pagination pagination, List<Quotes> data) { }
+
+        var stopDate = LocalDate.now();
+        var startDate = stopDate.minusYears(1);
+        var historicalResult = new RestTemplate().getForEntity(URL, HistoricalResult.class, accessKey,
+                enterprise.symbol(), period, startDate, stopDate).getBody();
         if (historicalResult == null) {
             throw new NullPointerException("Body is missing!");
         }
 
-        List<HistoricalQuote> historicalQuotes = new ArrayList<>();
-        for (Quotes quotes : historicalResult.data()) {
+        var historicalQuotes = new ArrayList<HistoricalQuote>();
+        for (var quotes : historicalResult.data()) {
             historicalQuotes.add(new HistoricalQuote(quotes.localDate(), quotes.close()));
         }
 

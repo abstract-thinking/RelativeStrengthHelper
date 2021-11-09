@@ -35,13 +35,4 @@ public class SimpleMovingAverage {
         return sum / period;
     }
 
-    public static void main(String[] args) {
-        double[] input_data = {1, 3, 5, 6, 8, 12, 18, 21, 22, 25};
-        int per = 3;
-        SimpleMovingAverage obj = new SimpleMovingAverage(per);
-        for (double x : input_data) {
-            obj.addData(x);
-            System.out.println("New number added is " + x + ", SMA = " + obj.getMean());
-        }
-    }
 }

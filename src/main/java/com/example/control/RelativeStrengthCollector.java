@@ -1,5 +1,7 @@
 package com.example.control;
 
+import static com.example.control.RelativeStrengthCalculator.calculate;
+
 import com.example.gateway.EnterpriseFetcher;
 import com.example.gateway.marketstack.HistoricalQuotesFetcher;
 import com.example.model.Enterprise;
@@ -24,23 +26,19 @@ public class RelativeStrengthCollector {
     private HistoricalQuotesFetcher historicalQuotesFetcher;
 
     public RelativeStrengthResult collect(String symbol, int period) {
-        Enterprise enterprise = enterpriseFetcher.lookUp(symbol);
+        final var enterprise = enterpriseFetcher.lookUp(symbol);
 
-        RelativeStrengthCalculator calculator = new RelativeStrengthCalculator(period);
-
-        List<HistoricalQuote> historicalQuotes = historicalQuotesFetcher.fetch(enterprise, period);
-        return new RelativeStrengthResult(enterprise, calculator.calculate(historicalQuotes));
+        var historicalQuotes = historicalQuotesFetcher.fetch(enterprise, period);
+        return new RelativeStrengthResult(enterprise, calculate(historicalQuotes, period));
     }
 
     public List<RelativeStrengthResult> collect(Exchange exchange, int period) {
-        List<Enterprise> enterprises = enterpriseFetcher.fetch(exchange);
+        var enterprises = enterpriseFetcher.fetch(exchange);
 
-        RelativeStrengthCalculator calculator = new RelativeStrengthCalculator(period);
-        List<RelativeStrengthResult> result = new ArrayList<>();
-
-        for (Enterprise enterprise : enterprises) {
-            List<HistoricalQuote> historicalQuotes = historicalQuotesFetcher.fetch(enterprise, period);
-            result.add(new RelativeStrengthResult(enterprise, calculator.calculate(historicalQuotes)));
+        var result = new ArrayList<RelativeStrengthResult>();
+        for (var enterprise : enterprises) {
+            var historicalQuotes = historicalQuotesFetcher.fetch(enterprise, period);
+            result.add(new RelativeStrengthResult(enterprise, calculate(historicalQuotes, period)));
         }
 
         return result;
