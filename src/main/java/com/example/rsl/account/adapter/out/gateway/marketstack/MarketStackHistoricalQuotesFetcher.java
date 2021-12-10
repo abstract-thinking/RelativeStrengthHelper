@@ -1,4 +1,4 @@
-package com.example.rsl.account.adapter.out.gateway;
+package com.example.rsl.account.adapter.out.gateway.marketstack;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
@@ -68,11 +68,13 @@ class MarketStackHistoricalQuotesFetcher implements HistoricalQuotesFetcher {
 
         record Pagination(int limit, int offset, int count, int total) {
         }
+
         record HistoricalResult(Pagination pagination, List<Quotes> data) {
         }
 
+        // Region issue :-(
         final var historicalResult = new RestTemplate()
-                .getForEntity(URL, HistoricalResult.class, accessKey, enterprise.symbol().concat(".XETRA"), period, startDate, stopDate)
+                .getForEntity(URL, HistoricalResult.class, accessKey, enterprise.symbol().replace(".DE", ".XETRA"), period, startDate, stopDate)
                 .getBody();
         if (historicalResult == null) {
             throw new NullPointerException("Body is missing!");
@@ -86,7 +88,7 @@ class MarketStackHistoricalQuotesFetcher implements HistoricalQuotesFetcher {
         historicalQuotes.sort(Comparator.comparing(HistoricalQuote::date).reversed());
         historicalQuotesToRefresh.put(enterprise, historicalQuotes);
 
-        return historicalQuotes;
+        return historicalQuotes.subList(0, period);
     }
 
     @Async

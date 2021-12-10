@@ -1,4 +1,4 @@
-package com.example.rsl.account.adapter.out.gateway;
+package com.example.rsl.account.adapter.out.gateway.marketstack;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -8,7 +8,7 @@ import com.example.rsl.account.application.port.out.SymbolLookUp;
 import com.example.rsl.account.domain.Enterprise;
 
 @Service
-public class MarketStackSymbolLookUp implements SymbolLookUp {
+class MarketStackSymbolLookUp implements SymbolLookUp {
 
     private static final String URL = "http://api.marketstack.com/v1/tickers/{symbol}?access_key={accessKey}";
 
@@ -20,7 +20,7 @@ public class MarketStackSymbolLookUp implements SymbolLookUp {
 
         var description = new RestTemplate().getForEntity(URL, Description.class, symbol, accessKey).getBody();
         if (description == null) {
-            return new Enterprise("", symbol);
+            return new Enterprise("Name not found", symbol);
         }
 
         return new Enterprise(description.name(), description.symbol());

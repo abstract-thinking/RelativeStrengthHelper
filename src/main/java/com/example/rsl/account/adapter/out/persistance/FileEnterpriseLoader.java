@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.rsl.account.adapter.in.web.Exchange;
-import com.example.rsl.account.adapter.out.gateway.MarketStackSymbolLookUp;
 import com.example.rsl.account.application.port.out.EnterpriseLoader;
 import com.example.rsl.account.domain.Enterprise;
 import com.opencsv.CSVReader;
@@ -27,7 +26,7 @@ public class FileEnterpriseLoader implements EnterpriseLoader {
 
     @SneakyThrows
     private List<Enterprise> readHDAX() {
-        var inputStream = MarketStackSymbolLookUp.class.getClassLoader().getResourceAsStream("hdax_symbols.csv");
+        var inputStream = FileEnterpriseLoader.class.getClassLoader().getResourceAsStream("hdax_symbols.csv");
         if (inputStream == null) {
             throw new IllegalArgumentException("File not found");
         }

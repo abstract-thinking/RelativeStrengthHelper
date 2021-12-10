@@ -76,8 +76,8 @@ class RelativeStrengthServiceTest {
     void shouldCalculateRelativeStrengths() {
         final LocalDate date = LocalDate.of(2021, Month.NOVEMBER, 30);
         final int period = 135;
-        final Enterprise beiersdorf = new Enterprise("BEIERSDORF AG O.N.", "BEI.XETRA");
-        final Enterprise brenntag = new Enterprise("BRENNTAG SE NA O.N.", "BNR.XETRA");
+        final Enterprise beiersdorf = new Enterprise("BEIERSDORF AG O.N.", "BEI.DE");
+        final Enterprise brenntag = new Enterprise("BRENNTAG SE NA O.N.", "BNR.DE");
         when(enterpriseLoader.loadExchange(HDAX)).thenReturn(List.of(beiersdorf, brenntag));
         when(historicalQuotesFetcher.fetchAsync(beiersdorf, eq(LocalDate.now()), period)).thenReturn(generateCompletableFutureHistoricalQuotes(date, period));
         when(historicalQuotesFetcher.fetchAsync(brenntag, eq(LocalDate.now()),period)).thenReturn(generateCompletableFutureHistoricalQuotes(date, period, 3));

@@ -1,4 +1,4 @@
-package com.example.rsl.account.adapter.out.gateway;
+package com.example.rsl.account.adapter.out.gateway.yahoo;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,7 +30,7 @@ import lombok.SneakyThrows;
 
 @Primary
 @Service
-public class YahooHistoricalQuotesFetcher implements HistoricalQuotesFetcher {
+class YahooHistoricalQuotesFetcher implements HistoricalQuotesFetcher {
 
     private static final String URL = "https://query1.finance.yahoo.com/v7/finance/download/{symbol}?period1={startDate"
             + "}&period2={endDate}&interval=1d&events=history";
@@ -38,18 +39,17 @@ public class YahooHistoricalQuotesFetcher implements HistoricalQuotesFetcher {
     @Override
     public List<HistoricalQuote> fetch(Enterprise enterprise, LocalDate endDate, int period) {
         long endDateInEpochSecond = endDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
-        int minusDays = ((period / 5) * 7) + 2;
-        long startDateInEpochSecond = endDate.minusDays(minusDays).atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
+        long startDateInEpochSecond = endDate.minusYears(1).atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
 
         Map<String, String> params = new HashMap<>();
-        params.put("symbol", enterprise.symbol().concat(".DE"));
+        params.put("symbol", enterprise.symbol());
         params.put("endDate", String.valueOf(endDateInEpochSecond));
         params.put("startDate", String.valueOf(startDateInEpochSecond));
 
         File file = new RestTemplate().execute(URL, HttpMethod.GET, null, clientHttpResponse -> {
-            File ret = File.createTempFile("download", "tmp");
-            StreamUtils.copy(clientHttpResponse.getBody(), new FileOutputStream(ret));
-            return ret;
+            File tempFile = File.createTempFile("download", "tmp");
+            StreamUtils.copy(clientHttpResponse.getBody(), new FileOutputStream(tempFile));
+            return tempFile;
         }, params);
 
         if (file == null) {
@@ -67,7 +67,7 @@ public class YahooHistoricalQuotesFetcher implements HistoricalQuotesFetcher {
 
         historicalQuotes.sort(Comparator.comparing(HistoricalQuote::date).reversed());
 
-        return historicalQuotes;
+        return historicalQuotes.subList(0, period);
     }
 
     @Override
