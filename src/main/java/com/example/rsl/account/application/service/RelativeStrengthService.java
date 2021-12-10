@@ -41,24 +41,24 @@ public class RelativeStrengthService implements CalculateRelativeStrengthUseCase
     @SneakyThrows
     @Override
     public RelativeStrengthResult calculateRelativeStrength(CalculateRelativeStrengthCommand calculateRelativeStrengthCommand) {
-        final var enterprise = symbolLookUp.lookUp(calculateRelativeStrengthCommand.getSymbol());
+        final var enterprise = symbolLookUp.lookUp(calculateRelativeStrengthCommand.symbol());
         final var endDate = LocalDate.now();
-        final var historicalQuotes = historicalQuotesFetcher.fetch(enterprise, endDate, calculateRelativeStrengthCommand.getPeriod());
+        final var historicalQuotes = historicalQuotesFetcher.fetch(enterprise, endDate, calculateRelativeStrengthCommand.period());
 
-        return new RelativeStrengthResult(enterprise, calculate(historicalQuotes, calculateRelativeStrengthCommand.getPeriod(), enterprise));
+        return new RelativeStrengthResult(enterprise, calculate(historicalQuotes, calculateRelativeStrengthCommand.period(), enterprise));
     }
 
     @SneakyThrows
     @Override
     public RelativeStrengthResultWrapper calculateRelativeStrengths(CalculateRelativeStrengthsCommand calculateRelativeStrengthsCommand) {
-        final var enterprises = enterpriseLoader.loadExchange(calculateRelativeStrengthsCommand.getExchange());
+        final var enterprises = enterpriseLoader.loadExchange(calculateRelativeStrengthsCommand.exchange());
 
         LocalDate endDate = LocalDate.now();
         final var futures = new HashMap<Enterprise, CompletableFuture<RelativeStrength>>();
         for (var enterprise : enterprises) {
             final var historicalQuotes = historicalQuotesFetcher
-                    .fetchAsync(enterprise, endDate, calculateRelativeStrengthsCommand.getPeriod())
-                    .thenApply(historicalQuote -> calculate(historicalQuote, calculateRelativeStrengthsCommand.getPeriod(), enterprise));
+                    .fetchAsync(enterprise, endDate, calculateRelativeStrengthsCommand.period())
+                    .thenApply(historicalQuote -> calculate(historicalQuote, calculateRelativeStrengthsCommand.period(), enterprise));
             futures.put(enterprise, historicalQuotes);
         }
 
@@ -67,7 +67,7 @@ public class RelativeStrengthService implements CalculateRelativeStrengthUseCase
             result.add(new RelativeStrengthResult(future.getKey(), future.getValue().get()));
         }
 
-        result.add(calculateIndexRsl(calculateRelativeStrengthsCommand.getExchange().name(), result));
+        result.add(calculateIndexRsl(calculateRelativeStrengthsCommand.exchange().name(), result));
         result.sort(Comparator.comparing(
                 relativeStrengthResult -> relativeStrengthResult.relativeStrength().rsl(), reverseOrder()));
 
@@ -75,7 +75,7 @@ public class RelativeStrengthService implements CalculateRelativeStrengthUseCase
         LocalDate dataEndDate = result.get(0).relativeStrength().date();
 
         return new RelativeStrengthResultWrapper(
-                calculateRelativeStrengthsCommand.getExchange().name(), dataEndDate, result);
+                calculateRelativeStrengthsCommand.exchange().name(), dataEndDate, result);
     }
 
     private RelativeStrengthResult calculateIndexRsl(String exchangeName, List<RelativeStrengthResult> result) {

@@ -1,13 +1,7 @@
 package com.example.rsl.account.application.port.in;
 
 import lombok.NonNull;
-import lombok.Value;
 
-@Value
-public class CalculateRelativeStrengthCommand {
+public record CalculateRelativeStrengthCommand(@NonNull String symbol, int period) {
 
-    @NonNull
-    String symbol;
-
-    int period;
 }

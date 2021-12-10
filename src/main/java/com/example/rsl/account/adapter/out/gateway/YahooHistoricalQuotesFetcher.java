@@ -42,7 +42,7 @@ public class YahooHistoricalQuotesFetcher implements HistoricalQuotesFetcher {
         long startDateInEpochSecond = endDate.minusDays(minusDays).atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
 
         Map<String, String> params = new HashMap<>();
-        params.put("symbol", enterprise.symbol().replace("XETRA", "DE"));
+        params.put("symbol", enterprise.symbol().concat(".DE"));
         params.put("endDate", String.valueOf(endDateInEpochSecond));
         params.put("startDate", String.valueOf(startDateInEpochSecond));
 

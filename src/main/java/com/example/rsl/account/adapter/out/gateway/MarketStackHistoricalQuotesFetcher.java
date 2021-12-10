@@ -72,7 +72,7 @@ class MarketStackHistoricalQuotesFetcher implements HistoricalQuotesFetcher {
         }
 
         final var historicalResult = new RestTemplate()
-                .getForEntity(URL, HistoricalResult.class, accessKey, enterprise.symbol(), period, startDate, stopDate)
+                .getForEntity(URL, HistoricalResult.class, accessKey, enterprise.symbol().concat(".XETRA"), period, startDate, stopDate)
                 .getBody();
         if (historicalResult == null) {
             throw new NullPointerException("Body is missing!");
